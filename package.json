@@ -1,0 +1,21 @@
+{
+  "name": "meu-projeto-rpg",
+  "version": "1.0.0",
+  "description": "Chat RPG com WebSocket",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "keywords": [
+    "rpg",
+    "chat",
+    "websocket",
+    "node"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "ws": "^8.14.2"
+  }
+}
