@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat com WebSocket</title>
+    <style>
+        body {
+            display: flex;
+            font-family: Arial, sans-serif;
+        }
+        #chat {
+            flex: 3;
+            display: flex;
+            flex-direction: column;
+        }
+        #messages {
+            flex: 1;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        #userList {
+            flex: 1;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-left: 10px;
+        }
+        #controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="chat">
+        <div id="messages"></div>
+        <div id="controls">
+            <button onclick="rollDice(4)">d4</button>
+            <button onclick="rollDice(6)">d6</button>
+            <button onclick="rollDice(8)">d8</button>
+            <button onclick="rollDice(10)">d10</button>
+            <button onclick="rollDice(12)">d12</button>
+            <button onclick="rollDice(20)">d20</button>
+        </div>
+        <input type="text" id="messageInput" placeholder="Digite sua mensagem..." onkeypress="handleKeyPress(event)">
+    </div>
+    <div id="userList"></div>
+
+    <script>
+        const ws = new WebSocket('ws://localhost:8080');
+        let username = '';
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+
+            if (data.type === 'message') {
+                const messages = document.getElementById('messages');
+                const messageElement = document.createElement('div');
+                messageElement.textContent = data.text;
+                messages.appendChild(messageElement);
+                messages.scrollTop = messages.scrollHeight;
+            } else if (data.type === 'userList') {
+                const userList = document.getElementById('userList');
+                userList.innerHTML = '<strong>Usuários Online:</strong><br>' + data.users.join('<br>');
+            }
+        };
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                const input = document.getElementById('messageInput');
+                const message = input.value.trim();
+
+                if (message) {
+                    if (!username) {
+                        username = message;
+                        ws.send(JSON.stringify({ type: 'join', username: username }));
+                    } else {
+                        ws.send(JSON.stringify({ type: 'message', text: message }));
+                    }
+                    input.value = '';
+                }
+            }
+        }
+
+        function rollDice(faces) {
+            ws.send(JSON.stringify({ type: 'roll', faces: faces }));
+        }
+    </script>
+</body>
+</html>
